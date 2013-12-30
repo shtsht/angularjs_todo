@@ -62,17 +62,24 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
 
                        // adding todo. get new todo from $scope.newTodo and push it to todos
-        $scope.addTodo = function () {
+        $scope.addTodo = function (parentId) {
+
                 var newTodo = $scope.newTodo.trim();// trim() remove whitespace from both sides of a string
                 if (!newTodo.length) {
                         return;
                 }
 
+                todos.reverse();
+
                 todos.push({
+                        id: uuid(),
                         title: newTodo,
                         completed: false,
-                        focused: (todos.length == 0)? true : false
+                        focused: (todos.length == 0)? true : false,
+                        parentId: (parentId == undefined)? null : parentId
                 });
+
+                todos.reverse();
 
                 $scope.newTodo = '';
         };
@@ -124,6 +131,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
         };
 
 
+
                        /**
                         * for keyboard shortcut
                         */
@@ -136,10 +144,10 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
                                  todos[nextFocusedIndex].focused = true;
 
-
-        });
+        }, { 'inputDisabled':true }  );
 
         keyboardManager.bind('k', function() {
+
                                  var focusedIndex = getFocusedTodosIndex();
 
                                  todos[focusedIndex].focused = false;
@@ -147,14 +155,33 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                                  var nextFocusedIndex = (focusedIndex == 0)? todos.length - 1 : (focusedIndex - 1);
 
                                  todos[nextFocusedIndex].focused = true;
-        });
+        }, { 'inputDisabled':true }  );
+
 
         keyboardManager.bind('e', function() {
 
                 $scope.editedTodo = todos[getFocusedTodosIndex()];
-                $scope.originalTodo = angular.extend({}, todo);
+                $scope.originalTodo = angular.extend({}, todos[getFocusedTodosIndex()]);
 
-        });
+        }, { 'inputDisabled':true }  );
+
+        keyboardManager.bind('c', function() {
+
+                var focusedTodo = todos[getFocusedTodosIndex()];
+                focusedTodo.completed = !focusedTodo.completed;
+
+        }, { 'inputDisabled':true }  );
+
+        keyboardManager.bind('s', function() {
+                 initFocused();
+                 todos.sort(function(a, b) { return a.completed - b.completed; });
+        }, { 'inputDisabled':true }  );
+
+
+                       // n to focus on new todo form.
+        keyboardManager.bind('n', function() {
+
+        }, { 'inputDisabled':true }  );
 
 
                        /**
@@ -175,6 +202,27 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
                        }
 
+                       function initFocused(){
+
+                           if(todos.length == 0) return;
+
+                           todos.forEach(function (todo, index, todos) {
+                                             if(todo.focused == true){
+                                               todo.focused = false;
+                                             }
+                                         });
+
+                           todos[0].focused = true;
+
+                       }
+
+
+                       function uuid(){
+                           var S4 = function() {
+                               return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+                           };
+                           return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4() +S4());
+                       }
 
 
 });
