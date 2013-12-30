@@ -127,7 +127,6 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                        /**
                         * for keyboard shortcut
                         */
-        // Bind two callback on j
         keyboardManager.bind('j', function() {
                                  var focusedIndex = getFocusedTodosIndex();
 
@@ -139,7 +138,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
 
         });
-        // Bind two callback on k
+
         keyboardManager.bind('k', function() {
                                  var focusedIndex = getFocusedTodosIndex();
 
@@ -148,6 +147,13 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                                  var nextFocusedIndex = (focusedIndex == 0)? todos.length - 1 : (focusedIndex - 1);
 
                                  todos[nextFocusedIndex].focused = true;
+        });
+
+        keyboardManager.bind('e', function() {
+
+                $scope.editedTodo = todos[getFocusedTodosIndex()];
+                $scope.originalTodo = angular.extend({}, todo);
+
         });
 
 

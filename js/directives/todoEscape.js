@@ -6,7 +6,7 @@
  * an `escape` keydown event.
  */
 todomvc.directive('todoEscape', function () {
-        var ESCAPE_KEY = 17;
+        var ESCAPE_KEY = 27;
         return function (scope, elem, attrs) {
                 elem.bind('keydown', function (event) {
                         if (event.keyCode === ESCAPE_KEY) {
