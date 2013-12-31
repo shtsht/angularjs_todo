@@ -185,7 +185,49 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                        // TODO: [issue] sorting collapses tree structure
         keyboardManager.bind('s', function() {
                  initFocused();
-                 todos.sort(function(a, b) { return a.completed - b.completed; });
+
+                 var todosCopy = Array.apply(null,$scope.todos);
+
+                 var parentTodos = todosCopy.filter(function(elem){
+                                                  return (elem.parentId == null);
+                                              }
+                                             );
+
+                 var childTodos = todosCopy.filter(function(elem){
+                                                  return (elem.parentId != null);
+                                              }
+                                             );
+
+                 parentTodos.sort(function(a, b) {
+                                      return a.completed - b.completed;
+                            });
+
+                                 while(childTodos.length != 0){
+
+                                     var len = childTodos.length;
+                                     var i = 0;
+
+                                     while(len--){
+
+                                         var parentIndex = getIndexByID(parentTodos, childTodos[i].parentId);
+
+                                         if(parentIndex == null){
+                                             i++;
+                                             continue;
+                                         }
+
+                                         parentTodos.splice(parentIndex + 1, 0, childTodos[i]);
+                                         childTodos.splice(i, 1);
+
+                                     };
+
+                                 }
+
+                                 $scope.todos = parentTodos;
+
+                                 //TODO: store data in this order. todoStorage.put($scope.todos) doesn't work
+
+
         }, { 'inputDisabled':true }  );
 
 
@@ -255,6 +297,20 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                                return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
                            };
                            return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4() +S4());
+                       }
+
+
+                       function getIndexByID(parentTodos, parentId){
+
+                           var indexOfTodo = null;
+
+                           parentTodos.forEach(function (todo, index, todos) {
+                                             if(todo.id == parentId){
+                                                 indexOfTodo = index;
+                                             }
+                                         });
+
+                           return indexOfTodo;
                        }
 
 });
