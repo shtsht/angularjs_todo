@@ -62,26 +62,34 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
 
                        // adding todo. get new todo from $scope.newTodo and push it to todos
-        $scope.addTodo = function (parentId) {
+       $scope.addTodo = function (posi, parentId, generation, title) {
 
-                var newTodo = $scope.newTodo.trim();// trim() remove whitespace from both sides of a string
+                var newTodo = (typeof title == "undefined")? $scope.newTodo.trim() : title;// trim() remove whitespace from both sides of a string
                 if (!newTodo.length) {
                         return;
                 }
 
-                todos.reverse();
-
-                todos.push({
-                        id: uuid(),
+           var id = uuid();
+           var newTodoObject = {
+                        id: id,
                         title: newTodo,
                         completed: false,
                         focused: (todos.length == 0)? true : false,
-                        parentId: (parentId == undefined)? null : parentId
-                });
+                        parentId: (typeof parentId == "undefined")? null : parentId,
+                        generation: (typeof generation == "undefined")? 0 : generation
+                };
 
+           if (typeof posi == "undefined"){
                 todos.reverse();
+                todos.push(newTodoObject);
+                todos.reverse();
+           }else{
+               todos.splice(posi, 0, newTodoObject);
+           }
 
-                $scope.newTodo = '';
+           $scope.newTodo = '';
+
+           return id;
         };
 
                        // editing todo. put passed todo to $scope.editedTodo(NOTE: using not "editing" but "edited". it seems "being edited" )
@@ -135,6 +143,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                        /**
                         * for keyboard shortcut
                         */
+                       // TODO: [issue] j/k is not working (move todos array. should be move in active todos) on active page view
         keyboardManager.bind('j', function() {
                                  var focusedIndex = getFocusedTodosIndex();
 
@@ -172,16 +181,40 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
         }, { 'inputDisabled':true }  );
 
+
+                       // TODO: [issue] sorting collapses tree structure
         keyboardManager.bind('s', function() {
                  initFocused();
                  todos.sort(function(a, b) { return a.completed - b.completed; });
         }, { 'inputDisabled':true }  );
 
 
-                       // n to focus on new todo form.
+        keyboardManager.bind('a', function() {
+
+                var focusedIndex = getFocusedTodosIndex();
+                var parentGeneration = todos[focusedIndex].generation;
+                var prefix = Array(parentGeneration + 2).join('-');
+
+                $scope.addTodo(focusedIndex + 1, todos[focusedIndex].id, todos[focusedIndex].generation + 1, prefix);
+
+                todos[focusedIndex].focused = false;
+                todos[focusedIndex + 1].focused = true;
+
+                $scope.editedTodo = todos[getFocusedTodosIndex()];
+                $scope.originalTodo = angular.extend({}, todos[getFocusedTodosIndex()]);
+
+        }, { 'inputDisabled':true }  );
+
+                       // TODO: n to focus on new todo form.
         keyboardManager.bind('n', function() {
 
         }, { 'inputDisabled':true }  );
+
+                       // TODO: d to delete focused todo
+        keyboardManager.bind('d', function() {
+
+        }, { 'inputDisabled':true }  );
+
 
 
                        /**
@@ -223,6 +256,5 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                            };
                            return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4() +S4());
                        }
-
 
 });

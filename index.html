@@ -12,6 +12,9 @@
                   .bold {
                   font-weight: bold;
                   }
+                  .children {
+                  color: red;
+                  }
                 </style>
         </head>
         <body>
@@ -29,8 +32,8 @@
                                 <label for="toggle-all">Mark all as complete</label>
                                 <ul id="todo-list" >
                                   <span class="glyphicon glyphicon-star"></span>
-                                        <li ng-repeat="todo in todos | filter:statusFilter track by $index | filter:{parentId: null}" ng-class="{bold: todo.focused, completed: todo.completed, editing: todo == editedTodo}">
-                                                <div class="view">
+                                        <li ng-repeat="todo in todos | filter:statusFilter track by $index" ng-class="{bold: todo.focused, completed: todo.completed, editing: todo == editedTodo}">
+                                                <div ng-class="{view: true, children: todo.parentId != null}">
                                                         <input class="toggle" type="checkbox" ng-model="todo.completed">
                                                         <label ng-dblclick="editTodo(todo)">{{todo.title}}</label>
                                                         <button class="destroy" ng-click="removeTodo(todo)"></button>
