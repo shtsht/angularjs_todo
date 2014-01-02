@@ -18,13 +18,26 @@
                 </style>
         </head>
         <body>
+          [move]
+          j : next todo<br>
+          k : previous todo<br><br>
+          [CRUD]
+          a : add child todo<br>
+          n : create new todo<br>
+          e : edit todo<br>
+          c : make todo completed<br>
+          ctrl + k : kill todo<br>
+          ctrl + y : yank (stored killed todo)<br>
+          [others]<br>
+          s : sort todo (completed todos go to the end of the list)<br>
+          <br>
+          latest killed todo (can be yanked) : {{killedTodo}}
+          <br>
+
+
                 <section id="todoapp" ng-controller="TodoCtrl">
                         <header id="header">
                                 <h1>todos</h1>
-                                <form id="todo-form" ng-submit="addTodo()">
-                                  <!-- <input id="new-todo" placeholder="What needs to be done?" ng-model="newTodo" autofocus>  -->
-                                  <input id="new-todo" placeholder="What needs to be done?" ng-model="newTodo"  ng-focus="setComposing(true)" ng-blur="setComposing(false)">
-                                </form>
                         </header>
                         <section id="main" ng-show="todos.length" ng-cloak>
          <!-- The ngCloak directive is used to prevent the Angular html template from being briefly displayed by the browser in its raw (uncompiled) form while your application is loading -->

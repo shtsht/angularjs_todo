@@ -66,9 +66,9 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
        $scope.addTodo = function (posi, parentId, generation, title) {
 
                 var newTodo = (typeof title == "undefined")? $scope.newTodo.trim() : title;// trim() remove whitespace from both sides of a string
-                if (!newTodo.length) {
-                        return;
-                }
+//                if (!newTodo.length) {
+//                        return;
+//                }
 
            var id = uuid();
            var newTodoObject = {
@@ -191,8 +191,8 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
         }, { 'inputDisabled':true }  );
 
 
-                       //TODO: infinit loop if child has deleted parent
         keyboardManager.bind('s', function() {
+
                  initFocused();
 
                  var todosCopy = Array.apply(null,$scope.todos);
@@ -234,15 +234,15 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
                                  }
 
-                                 $scope.todos = parentTodos;
+                                 $scope.todos.splice(0, $scope.todos.length);
 
-                                 //TODO: store data in this order. todoStorage.put($scope.todos) doesn't work
-
-
+                                 parentTodos.forEach(function(todo){
+                                                         $scope.todos.push(todo);
+                                                     });
         }, { 'inputDisabled':true }  );
 
 
-        keyboardManager.bind('a', function() {
+        keyboardManager.bind('a', function() {// TODO : sometimes doesnt work. dont know condition..
 
                 var focusedIndex = getFocusedTodosIndex();
                 var parentGeneration = todos[focusedIndex].generation;
@@ -258,25 +258,39 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
         }, { 'inputDisabled':true }  );
 
-                       // TODO: n to focus on new todo form.
         keyboardManager.bind('n', function() {
 
+                                 if($scope.todos.length == 0){
+                                     $scope.addTodo(0, null, 0, '');
+                                     todos[0].focused = true;
+                                 }else{
+                                     var focusedIndex = getFocusedTodosIndex();
+                                     $scope.addTodo(focusedIndex + 1, null, 0, '');
+                                     todos[focusedIndex].focused = false;
+                                     todos[focusedIndex + 1].focused = true;
+                                 }
+
+
+                                 $scope.editedTodo = todos[getFocusedTodosIndex()];
+                                 $scope.originalTodo = angular.extend({}, todos[getFocusedTodosIndex()]);
+
         }, { 'inputDisabled':true }  );
 
-                       // TODO: d to delete focused todo
-        keyboardManager.bind('d', function() {
-
-        }, { 'inputDisabled':true }  );
-
-                       // TODO: k to kill todo (show killed todo in other region)
         keyboardManager.bind('ctrl+k', function() {
                                  var focusedIndex = getFocusedTodosIndex();
+
+                                 todos[focusedIndex].focused = false;
+                                 todos[(focusedIndex + 1) % todos.length].focused = true;
+
+                                 $scope.killedTodo = $scope.todos[focusedIndex];
                                  $scope.todos.splice(focusedIndex, 1);
         }, { 'inputDisabled':true }  );
 
+        keyboardManager.bind('ctrl+y', function() {
 
-                       // TODO: y to yank todo
-        keyboardManager.bind('y', function() {
+                                 var focusedIndex = getFocusedTodosIndex();
+                                 $scope.todos.splice(focusedIndex, 0, $scope.killedTodo);
+                                 todos[focusedIndex].focused = false;
 
         }, { 'inputDisabled':true }  );
 
