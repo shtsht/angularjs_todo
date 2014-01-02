@@ -17,6 +17,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                         */
         var todos = $scope.todos = todoStorage.get();
         $scope.newTodo = '';
+        $scope.killedTodo = null;
         $scope.editedTodo = null;
 
 
@@ -117,9 +118,17 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                 $scope.doneEditing($scope.originalTodo);
         };
 
+
+
+
                        // remove todo in todos(array) by array operation "splice"
         $scope.removeTodo = function (todo) {
-                todos.splice(todos.indexOf(todo), 1);
+            todos.splice(todos.indexOf(todo), 1);// remove todo itself
+
+            // remove children of todo and remove all of the descendant
+            var indexesOfChildren = getChildrenIndexesByParentID($scope.todos, todo.id);
+            removeTodoByIdsWithDescendants($scope.todos, indexesOfChildren);
+
         };
 
         $scope.clearCompletedTodos = function () {
@@ -182,7 +191,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
         }, { 'inputDisabled':true }  );
 
 
-                       // TODO: [issue] sorting collapses tree structure
+                       //TODO: infinit loop if child has deleted parent
         keyboardManager.bind('s', function() {
                  initFocused();
 
@@ -201,6 +210,8 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                  parentTodos.sort(function(a, b) {
                                       return a.completed - b.completed;
                             });
+
+                                 childTodos.reverse();
 
                                  while(childTodos.length != 0){
 
@@ -257,6 +268,17 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
         }, { 'inputDisabled':true }  );
 
+                       // TODO: k to kill todo (show killed todo in other region)
+        keyboardManager.bind('ctrl+k', function() {
+                                 var focusedIndex = getFocusedTodosIndex();
+                                 $scope.todos.splice(focusedIndex, 1);
+        }, { 'inputDisabled':true }  );
+
+
+                       // TODO: y to yank todo
+        keyboardManager.bind('y', function() {
+
+        }, { 'inputDisabled':true }  );
 
 
                        /**
@@ -300,17 +322,44 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                        }
 
 
-                       function getIndexByID(parentTodos, parentId){
-
+                       function getIndexByID(todos, id){
                            var indexOfTodo = null;
 
-                           parentTodos.forEach(function (todo, index, todos) {
-                                             if(todo.id == parentId){
+                           todos.forEach(function (elem, index, array) {
+                                             if(elem.id == id){
                                                  indexOfTodo = index;
                                              }
                                          });
 
                            return indexOfTodo;
                        }
+
+                       function getChildrenIndexesByParentID(todos, parentId){
+                           var indexes = [];
+
+                           todos.forEach(function (elem, index, array) {
+                                             if(elem.parentId == parentId){
+                                                 indexes.push(elem.id);
+                                             }
+                                         });
+
+                           return indexes;
+                       }
+
+                       function removeTodoByIdsWithDescendants(todos, ids){
+
+                           ids.forEach(function(id){
+                                           var indexesOfChildren = getChildrenIndexesByParentID(todos, id);
+                                           todos.splice(id, 1);
+                                           removeTodoByIdsWithDescendants(todos, indexesOfChildren);
+                                       });
+
+                       };
+
+
+
+
+
+
 
 });
