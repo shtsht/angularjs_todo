@@ -17,7 +17,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                         */
         var todos = $scope.todos = todoStorage.get();
         $scope.newTodo = '';
-        $scope.killedTodo = null;
+        $scope.killedTodo = [];
         $scope.editedTodo = null;
 
 
@@ -276,20 +276,41 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
         }, { 'inputDisabled':true }  );
 
-        keyboardManager.bind('ctrl+k', function() {
+        keyboardManager.bind('y', function() {
                                  var focusedIndex = getFocusedTodosIndex();
 
                                  todos[focusedIndex].focused = false;
                                  todos[(focusedIndex + 1) % todos.length].focused = true;
 
-                                 $scope.killedTodo = $scope.todos[focusedIndex];
+                                 if(!checkIfMultipleLineYank(focusedIndex)){
+                                     $scope.killedTodo = [];
+                                 }
+
+                                 var yankedTodo = {};
+                                 yankedTodo['index'] = focusedIndex;
+                                 yankedTodo['todo'] = $scope.todos[focusedIndex];
+
+                                 $scope.killedTodo.push( yankedTodo );
                                  $scope.todos.splice(focusedIndex, 1);
+
         }, { 'inputDisabled':true }  );
 
-        keyboardManager.bind('ctrl+y', function() {
+        keyboardManager.bind('p', function() {
 
                                  var focusedIndex = getFocusedTodosIndex();
-                                 $scope.todos.splice(focusedIndex, 0, $scope.killedTodo);
+                                 var values = [];
+
+                                 $scope.killedTodo.forEach(function(yankedTodo){
+                                                               values.push(yankedTodo['todo']);
+                                                           });
+
+                                 values.reverse();
+
+                                 values.forEach(function(todoTorRestore){
+                                                    $scope.todos.splice(focusedIndex + 1, 0, todoTorRestore);
+                                                });
+
+                                 $scope.killedTodo = [];
                                  todos[focusedIndex].focused = false;
 
         }, { 'inputDisabled':true }  );
@@ -371,8 +392,16 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                        };
 
 
+                       function checkIfMultipleLineYank(newYankedIndex){
 
+                           var isMultipleLineYank = false;
 
+                           if( $scope.killedTodo.length == 0) return isMultipleLineYank;
+
+                           var lastYnakedIndex = $scope.killedTodo[$scope.killedTodo.length - 1]['index'];
+
+                           return newYankedIndex == lastYnakedIndex;
+                       }
 
 
 
