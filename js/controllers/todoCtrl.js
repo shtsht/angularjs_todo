@@ -31,6 +31,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
         $scope.$watch('todos', function (newValue, oldValue) {
                 $scope.remainingCount = filterFilter(todos, { completed: false }).length;
                 $scope.completedCount = todos.length - $scope.remainingCount;
+                $scope.completedCountInThisDay = getTodaysDoneTodoCount();
                 $scope.allChecked = !$scope.remainingCount;
                 if (newValue !== oldValue) { // This prevents unneeded calls to the local storage
                         todoStorage.put(todos);
@@ -75,6 +76,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                         id: id,
                         title: newTodo,
                         completed: false,
+                        completedDate: null,
                         focused: (todos.length == 0)? true : false,
                         parentId: (typeof parentId == "undefined")? null : parentId,
                         generation: (typeof generation == "undefined")? 0 : generation
@@ -186,6 +188,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
         keyboardManager.bind('c', function() {
 
                 var focusedTodo = todos[getFocusedTodosIndex()];
+                focusedTodo.completedDate = (focusedTodo.completed == false)? new Date() : null;
                 focusedTodo.completed = !focusedTodo.completed;
 
         }, { 'inputDisabled':true }  );
@@ -404,5 +407,29 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                        }
 
 
+                       function getTodaysDoneTodoCount(){
+                           var count = 0;
+                           var currentDate = new Date();
+
+
+                           $scope.todos.forEach(function(todo){
+
+                                                    if( typeof todo.completedDate == "undefined" && todo.completedDate == null) return;
+
+                                                    if( todo.completed == true  && isToday(todo.completedDate) ){
+                                                        count += 1;
+                                                    }
+                                                });
+
+                           return count;
+
+                       }
+
+                       function isToday(dateString){
+                           var currentDate = new Date();
+                           var date = new Date(dateString);
+
+                           return date.getDate() == currentDate.getDate() && date.getMonth() == currentDate.getMonth() && date.getFullYear() == currentDate.getFullYear();
+                       }
 
 });
