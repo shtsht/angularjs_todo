@@ -13,17 +13,41 @@
                   font-weight: bold;
                   }
                   .children {
-                  color: red;
+                  color: black;
                   }
                   #todo-list li label {
+                  font-size: 12px;
                   white-space: pre;
                   word-break: break-word;
-                  padding: 0px 60px 15px 0px;
+                  padding: 5px 5px 5px 5px;
                   margin-left: 45px;
                   display: block;
                   line-height: 1.2;
                   -webkit-transition: color 0.4s;
                   transition: color 0.4s;
+                  }
+                  #new-todo, .edit {
+                  position: relative;
+                  margin: 0;
+                  width: 100%;
+                  font-size: 12px;
+                  font-family: inherit;
+                  line-height: 1.4em;
+                  border: 0;
+                  outline: none;
+                  color: inherit;
+                  padding: 6px;
+                  border: 1px solid #999;
+                  box-shadow: inset 0 -1px 5px 0 rgba(0, 0, 0, 0.2);
+                  -moz-box-sizing: border-box;
+                  -ms-box-sizing: border-box;
+                  -o-box-sizing: border-box;
+                  box-sizing: border-box;
+                  -webkit-font-smoothing: antialiased;
+                  -moz-font-smoothing: antialiased;
+                  -ms-font-smoothing: antialiased;
+                  -o-font-smoothing: antialiased;
+                  font-smoothing: antialiased;
                   }
                 </style>
         </head>
@@ -41,18 +65,14 @@
           [others]<br>
           s : sort todo (completed todos go to the end of the list)<br>
           <br>
-          latest killed todo (can be yanked) : {{killedTodo}}
-          <br>
-
-
                 <section id="todoapp" ng-controller="TodoCtrl">
                         <header id="header">
-                                <h1>todos</h1>
+                                <h1>todos<br>
+                                  <p id="clear-completed" ng-show="completedCount">Today's completed todo is  {{completedCountInThisDay}} </p>
+                                </h1>
                         </header>
                         <section id="main" ng-show="todos.length" ng-cloak>
          <!-- The ngCloak directive is used to prevent the Angular html template from being briefly displayed by the browser in its raw (uncompiled) form while your application is loading -->
-                                <input id="toggle-all" type="checkbox" ng-model="allChecked" ng-click="markAll(allChecked)">
-                                <label for="toggle-all">Mark all as complete</label>
                                 <ul id="todo-list" >
                                   <span class="glyphicon glyphicon-star"></span>
                                         <li ng-repeat="todo in todos | filter:statusFilter track by $index" ng-class="{bold: todo.focused, completed: todo.completed, editing: todo == editedTodo}">

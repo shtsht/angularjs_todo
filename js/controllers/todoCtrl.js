@@ -16,6 +16,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
                         * initialization
                         */
         var todos = $scope.todos = todoStorage.get();
+        $scope.todosBackUpForUndo = [];
         $scope.newTodo = '';
         $scope.killedTodo = [];
         $scope.editedTodo = null;
@@ -180,6 +181,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
         keyboardManager.bind('e', function() {
 
+                $scope.todosBackUpForUndo.push(angular.copy(todos));
                 $scope.editedTodo = todos[getFocusedTodosIndex()];
                 $scope.originalTodo = angular.extend({}, todos[getFocusedTodosIndex()]);
 
@@ -187,6 +189,7 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
         keyboardManager.bind('c', function() {
 
+                $scope.todosBackUpForUndo.push(angular.copy(todos));
                 var focusedTodo = todos[getFocusedTodosIndex()];
                 focusedTodo.completedDate = (focusedTodo.completed == false)? new Date() : null;
                 focusedTodo.completed = !focusedTodo.completed;
@@ -195,6 +198,10 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
 
         keyboardManager.bind('s', function() {
+
+
+                 $scope.todosBackUpForUndo.push(angular.copy(todos));
+
 
                  initFocused();
 
@@ -247,6 +254,8 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
         keyboardManager.bind('a', function() {// TODO : sometimes doesnt work. dont know condition..
 
+               $scope.todosBackUpForUndo.push(angular.copy(todos));
+
                 var focusedIndex = getFocusedTodosIndex();
                 var parentGeneration = todos[focusedIndex].generation;
                 var prefix = Array(parentGeneration + 2).join('-');
@@ -262,6 +271,10 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
         }, { 'inputDisabled':true }  );
 
         keyboardManager.bind('n', function() {
+
+
+               $scope.todosBackUpForUndo.push(angular.copy(todos));
+
 
                                  if($scope.todos.length == 0){
                                      $scope.addTodo(0, null, 0, '');
@@ -280,6 +293,10 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
         }, { 'inputDisabled':true }  );
 
         keyboardManager.bind('y', function() {
+
+
+                 $scope.todosBackUpForUndo.push(angular.copy(todos));
+
                                  var focusedIndex = getFocusedTodosIndex();
 
                                  todos[focusedIndex].focused = false;
@@ -300,6 +317,9 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
         keyboardManager.bind('p', function() {
 
+              $scope.todosBackUpForUndo.push(angular.copy(todos));
+
+
                                  var focusedIndex = getFocusedTodosIndex();
                                  var values = [];
 
@@ -309,8 +329,8 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
                                  values.reverse();
 
-                                 values.forEach(function(todoTorRestore){
-                                                    $scope.todos.splice(focusedIndex + 1, 0, todoTorRestore);
+                                 values.forEach(function(todoToRestore){
+                                                    $scope.todos.splice(focusedIndex + 1, 0, todoToRestore);
                                                 });
 
                                  $scope.killedTodo = [];
@@ -318,6 +338,18 @@ todomvc.controller('TodoCtrl', function TodoCtrl($scope, $location, todoStorage,
 
         }, { 'inputDisabled':true }  );
 
+        keyboardManager.bind('ctrl+z', function() {
+
+          if($scope.todosBackUpForUndo.length == 0) return;
+
+          var prevState = $scope.todosBackUpForUndo.pop();
+
+          $scope.todos.splice(0, $scope.todos.length);
+          prevState.forEach(function(todo){
+            $scope.todos.push(todo);
+          });
+
+        }, { 'inputDisabled':true }  );
 
                        /**
                         * helpers
